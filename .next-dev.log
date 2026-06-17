@@ -1,0 +1,21 @@
+
+> newton-simulation@1.0.0 dev
+> next dev --port 3000
+
+   ▲ Next.js 15.5.19
+   - Local:        http://localhost:3000
+   - Network:      http://172.27.192.1:3000
+
+ ✓ Starting...
+ ✓ Ready in 10.4s
+ ○ Compiling /materi ...
+ ✓ Compiled /materi in 8.3s (637 modules)
+ GET /materi 200 in 9609ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1702ms (670 modules)
+ GET / 200 in 2454ms
+ GET / 200 in 285ms
+ GET /materi 200 in 313ms
+ GET / 200 in 116ms
+ GET /materi 200 in 309ms
+ GET / 200 in 178ms
