@@ -54,7 +54,13 @@ export function PhysicsCanvas() {
   const primaryBodyRef = useRef<Matter.Body | null>(null);
   const secondaryBodyRef = useRef<Matter.Body | null>(null);
   const runningRef = useRef(false);
+  const runnerActiveRef = useRef(false);
+  const visibleRef = useRef(true);
   const darkRef = useRef(false);
+
+  const massRef = useRef(5);
+  const forceRef = useRef(22);
+  const accelRef = useRef(4.4);
 
   const [law, setLaw] = useState<LawMode>("newton-2");
   const [mass, setMass] = useState(5);
@@ -65,17 +71,20 @@ export function PhysicsCanvas() {
   const acceleration = useMemo(() => Number((force / mass).toFixed(2)), [force, mass]);
   const currentLaw = lawOptions.find((option) => option.id === law) ?? lawOptions[1];
 
+  useEffect(() => { massRef.current = mass; }, [mass]);
+  useEffect(() => { forceRef.current = force; }, [force]);
+  useEffect(() => { accelRef.current = acceleration; }, [acceleration]);
+
+  // Update body mass live without recreating the engine
   useEffect(() => {
-    runningRef.current = isRunning;
-  }, [isRunning]);
+    if (primaryBodyRef.current) Matter.Body.setMass(primaryBodyRef.current, mass);
+    if (secondaryBodyRef.current) Matter.Body.setMass(secondaryBodyRef.current, mass);
+  }, [mass]);
 
   // observe theme changes to restyle canvas overlay colors
   useEffect(() => {
     const root = document.documentElement;
-    const update = () => {
-      darkRef.current = root.classList.contains("dark");
-      setSceneVersion((v) => v + 1);
-    };
+    const update = () => { darkRef.current = root.classList.contains("dark"); };
     const observer = new MutationObserver(update);
     observer.observe(root, { attributes: true, attributeFilter: ["class"] });
     darkRef.current = root.classList.contains("dark");
@@ -90,11 +99,11 @@ export function PhysicsCanvas() {
     const width = clamp(container.clientWidth || 960, 320, 1180);
     const height = width < 640 ? 340 : 420;
     const dark = darkRef.current;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     const engine = Matter.Engine.create();
     const world = engine.world;
-    world.gravity.y = law === "newton-1" ? 0 : 0.25;
-    if (law !== "newton-2") world.gravity.y = 0;
+    world.gravity.y = law === "newton-2" ? 0.25 : 0;
 
     const render = Matter.Render.create({
       element: container,
@@ -104,15 +113,17 @@ export function PhysicsCanvas() {
         height,
         background: "transparent",
         wireframes: false,
-        pixelRatio: window.devicePixelRatio
+        pixelRatio: dpr
       }
     });
     const runner = Matter.Runner.create();
+    runner.enabled = false;
 
     engineRef.current = engine;
     renderRef.current = render;
     runnerRef.current = runner;
     runningRef.current = false;
+    runnerActiveRef.current = false;
     setIsRunning(false);
 
     const floorColor = dark ? "#3a443f" : "#778873";
@@ -147,20 +158,19 @@ export function PhysicsCanvas() {
       restitution: law === "newton-3" ? 1 : 0.15,
       render: { fillStyle: primaryColor }
     });
-    Matter.Body.setMass(primary, mass);
+    Matter.Body.setMass(primary, massRef.current);
     primaryBodyRef.current = primary;
 
     const bodies = [floor, leftWall, rightWall, primary];
 
     if (law === "newton-3") {
-      const secondaryColor = dark ? "#A1BC98" : "#A1BC98";
       const secondary = Matter.Bodies.rectangle(width * 0.72, height - 76, 78, 52, {
         friction: 0,
         frictionAir: 0,
         restitution: 1,
-        render: { fillStyle: secondaryColor }
+        render: { fillStyle: "#A1BC98" }
       });
-      Matter.Body.setMass(secondary, mass);
+      Matter.Body.setMass(secondary, massRef.current);
       secondaryBodyRef.current = secondary;
       bodies.push(secondary);
     } else {
@@ -169,47 +179,58 @@ export function PhysicsCanvas() {
 
     Matter.Composite.add(world, bodies);
 
+    // Pre-render the dotted grid to an offscreen canvas once — drawn via
+    // drawImage each frame instead of hundreds of arc() calls.
     const gridColor = dark ? "rgba(148,163,144,0.18)" : "rgba(119,136,115,0.14)";
+    const gridCanvas = document.createElement("canvas");
+    gridCanvas.width = width * dpr;
+    gridCanvas.height = height * dpr;
+    const gctx = gridCanvas.getContext("2d");
+    if (gctx) {
+      gctx.scale(dpr, dpr);
+      gctx.fillStyle = gridColor;
+      for (let x = 36; x < width; x += 36) {
+        for (let y = 28; y < height - 38; y += 36) {
+          gctx.beginPath();
+          gctx.arc(x, y, 1.4, 0, Math.PI * 2);
+          gctx.fill();
+        }
+      }
+    }
+
     const labelColor = dark ? "#c3d6bb" : "#5e6b5b";
     const subColor = dark ? "rgba(195,214,187,0.6)" : "rgba(94,107,91,0.65)";
     const arrowPrimary = dark ? "#A1BC98" : "#8aa680";
     const arrowSecondary = dark ? "#94a390" : "#778873";
     const arrowAction = dark ? "#c3d6bb" : "#5e6b5b";
+    const lawTitle = currentLaw.title;
+    const lawId = law;
 
     Matter.Events.on(render, "afterRender", () => {
       const context = render.context;
       context.save();
 
-      // soft dotted grid
-      context.fillStyle = gridColor;
-      for (let x = 36; x < width; x += 36) {
-        for (let y = 28; y < height - 38; y += 36) {
-          context.beginPath();
-          context.arc(x, y, 1.4, 0, Math.PI * 2);
-          context.fill();
-        }
-      }
+      context.drawImage(gridCanvas, 0, 0, width, height);
 
-      // HUD label
       context.fillStyle = labelColor;
       context.font = "700 14px SF Pro Display, system-ui, sans-serif";
-      context.fillText(currentLaw.title, 22, 30);
+      context.fillText(lawTitle, 22, 30);
       context.font = "500 12px SF Pro Text, system-ui, sans-serif";
       context.fillStyle = subColor;
-      context.fillText(`Massa ${mass} kg · Gaya ${force} N · a ${acceleration} m/s²`, 22, 50);
+      context.fillText(`Massa ${massRef.current} kg · Gaya ${forceRef.current} N · a ${accelRef.current} m/s²`, 22, 50);
 
       const primaryPosition = primary.position;
       context.fillStyle = labelColor;
       context.font = "700 12px SF Pro Display, system-ui, sans-serif";
-      context.fillText(`${mass} kg`, primaryPosition.x - 15, primaryPosition.y + 4);
+      context.fillText(`${massRef.current} kg`, primaryPosition.x - 15, primaryPosition.y + 4);
 
-      if (runningRef.current && law === "newton-2") {
-        drawArrow(context, primaryPosition.x + 48, primaryPosition.y - 6, clamp(force * 3, 36, 150), arrowPrimary, `${force} N`);
+      if (runningRef.current && lawId === "newton-2") {
+        drawArrow(context, primaryPosition.x + 48, primaryPosition.y - 6, clamp(forceRef.current * 3, 36, 150), arrowPrimary, `${forceRef.current} N`);
       }
-      if (runningRef.current && law === "newton-1") {
+      if (runningRef.current && lawId === "newton-1") {
         drawArrow(context, primaryPosition.x + 48, primaryPosition.y - 6, 92, arrowSecondary, "v konstan");
       }
-      if (runningRef.current && law === "newton-3" && secondaryBodyRef.current) {
+      if (runningRef.current && lawId === "newton-3" && secondaryBodyRef.current) {
         const secondaryPosition = secondaryBodyRef.current.position;
         drawArrow(context, primaryPosition.x + 48, primaryPosition.y - 6, 70, arrowAction, "aksi");
         drawArrow(context, secondaryPosition.x - 48, secondaryPosition.y - 6, -70, arrowPrimary, "reaksi");
@@ -229,13 +250,70 @@ export function PhysicsCanvas() {
       render.canvas.remove();
       render.textures = {};
     };
-  }, [acceleration, currentLaw.title, force, law, mass, sceneVersion]);
+    // Engine is recreated only when the law or scene version (reset/resize) changes.
+    // Slider values (mass/force/acceleration) are read from refs — no recreation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [law, sceneVersion]);
+
+  // Pause the render loop while the simulation is off-screen to save CPU/GPU.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        visibleRef.current = entry.isIntersecting;
+        const render = renderRef.current;
+        const runner = runnerRef.current;
+        if (!render || !runner) return;
+        if (entry.isIntersecting) {
+          Matter.Render.run(render);
+          if (runningRef.current && !runnerActiveRef.current) {
+            runner.enabled = true;
+            runnerActiveRef.current = true;
+          }
+        } else {
+          Matter.Render.stop(render);
+          runner.enabled = false;
+          runnerActiveRef.current = false;
+        }
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [sceneVersion]);
+
+  // Re-init on resize / orientation change (debounced).
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || typeof ResizeObserver === "undefined") return;
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => setSceneVersion((v) => v + 1));
+    });
+    observer.observe(container);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, []);
+
+  function startRunner() {
+    const runner = runnerRef.current;
+    if (!runner || runnerActiveRef.current) return;
+    runner.enabled = true;
+    runnerActiveRef.current = true;
+  }
 
   function runSimulation() {
     const primary = primaryBodyRef.current;
     if (!primary) return;
+    if (!visibleRef.current) return;
     runningRef.current = true;
     setIsRunning(true);
+    startRunner();
     Matter.Body.setAngularVelocity(primary, 0);
     Matter.Body.setAngle(primary, 0);
 
@@ -255,9 +333,24 @@ export function PhysicsCanvas() {
     }
   }
 
+  function pauseSimulation() {
+    runningRef.current = false;
+    setIsRunning(false);
+    const runner = runnerRef.current;
+    if (runner) {
+      runner.enabled = false;
+      runnerActiveRef.current = false;
+    }
+  }
+
   function resetSimulation() {
     runningRef.current = false;
     setIsRunning(false);
+    const runner = runnerRef.current;
+    if (runner) {
+      runner.enabled = false;
+      runnerActiveRef.current = false;
+    }
     setSceneVersion((version) => version + 1);
   }
 
@@ -364,7 +457,7 @@ export function PhysicsCanvas() {
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={runSimulation}
+                onClick={isRunning ? pauseSimulation : runSimulation}
                 className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-moss to-moss-deep px-4 text-sm font-bold text-cream shadow-float transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift focus:outline-none focus-visible:ring-2 focus-visible:ring-sage dark:from-sage dark:to-moss dark:text-ink dark:shadow-float-dark dark:hover:shadow-lift-dark"
               >
                 {isRunning ? <Pause size={16} aria-hidden="true" /> : <Play size={16} aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-0.5" />}
