@@ -4,11 +4,22 @@
 
 :root {
   color-scheme: light;
-  --navy: #003049;
-  --red: #d62828;
-  --orange: #f77f00;
-  --amber: #fcbf49;
-  --parchment: #eae2b7;
+  --bg-base: #FDF6ED;
+  --bg-deep: #f5ece0;
+  --text: #5e6b5b;
+  --text-deep: #1c2120;
+  --surface: rgba(253, 246, 237, 0.7);
+  --border: rgba(220, 207, 192, 0.7);
+}
+
+.dark {
+  color-scheme: dark;
+  --bg-base: #131816;
+  --bg-deep: #0b0f0d;
+  --text: #94a390;
+  --text-deep: #e8ddd0;
+  --surface: rgba(42, 50, 47, 0.55);
+  --border: rgba(94, 107, 91, 0.35);
 }
 
 * {
@@ -17,21 +28,49 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "cv11";
+  transition: background-color 0.5s ease, color 0.4s ease;
+}
+
+/* Light background mesh */
+html:not(.dark) body {
   background:
-    linear-gradient(135deg, rgba(234, 226, 183, 0.9), rgba(252, 191, 73, 0.18)),
-    #fffaf0;
-  color: var(--navy);
-  font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    radial-gradient(40% 40% at 12% 8%, rgba(161, 188, 152, 0.28) 0%, transparent 60%),
+    radial-gradient(40% 40% at 88% 12%, rgba(220, 207, 192, 0.40) 0%, transparent 60%),
+    radial-gradient(45% 45% at 78% 88%, rgba(119, 136, 115, 0.16) 0%, transparent 60%),
+    radial-gradient(40% 40% at 18% 92%, rgba(161, 188, 152, 0.22) 0%, transparent 60%),
+    linear-gradient(180deg, #FDF6ED 0%, #f5ece0 100%);
+  background-attachment: fixed;
+}
+
+/* Dark background mesh */
+html.dark body {
+  background:
+    radial-gradient(45% 45% at 12% 8%, rgba(94, 107, 91, 0.30) 0%, transparent 60%),
+    radial-gradient(40% 40% at 88% 12%, rgba(119, 136, 115, 0.18) 0%, transparent 60%),
+    radial-gradient(45% 45% at 78% 88%, rgba(161, 188, 152, 0.10) 0%, transparent 60%),
+    radial-gradient(40% 40% at 18% 92%, rgba(94, 107, 91, 0.14) 0%, transparent 60%),
+    linear-gradient(180deg, #131816 0%, #0b0f0d 100%);
+  background-attachment: fixed;
 }
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
+  color: inherit;
 }
 
 canvas {
@@ -39,6 +78,142 @@ canvas {
 }
 
 ::selection {
-  background: var(--amber);
-  color: var(--navy);
+  background: rgba(161, 188, 152, 0.45);
+  color: var(--text-deep);
+}
+
+/* Soft minimal scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(119, 136, 115, 0.35);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(161, 188, 152, 0.6);
+  background-clip: content-box;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(119, 136, 115, 0.2);
+  outline: none;
+}
+.dark input[type="range"] {
+  background: rgba(148, 163, 144, 0.22);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #DCCFC0;
+  border: 2px solid #A1BC98;
+  box-shadow: 0 4px 12px rgba(94, 107, 91, 0.18);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.dark input[type="range"]::-webkit-slider-thumb {
+  background: #5e6b5b;
+  border-color: #A1BC98;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  border-color: #778873;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #DCCFC0;
+  border: 2px solid #A1BC98;
+  box-shadow: 0 4px 12px rgba(94, 107, 91, 0.18);
+  cursor: pointer;
+}
+
+@layer utilities {
+  .glass {
+    background: var(--surface);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+  }
+  .text-gradient {
+    background: linear-gradient(110deg, #5e6b5b 0%, #8aa680 45%, #778873 75%, #A1BC98 100%);
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gradient-pan 10s ease infinite;
+  }
+  .dark .text-gradient {
+    background: linear-gradient(110deg, #c3d6bb 0%, #A1BC98 40%, #94a390 70%, #DCCFC0 100%);
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gradient-pan 10s ease infinite;
+  }
+  .card-soft {
+    transition:
+      transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.3s ease;
+  }
+  .card-soft:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 56px rgba(94, 107, 91, 0.18);
+  }
+  .dark .card-soft:hover {
+    box-shadow: 0 28px 64px rgba(0, 0, 0, 0.55);
+  }
+  .shimmer-line {
+    background-image: linear-gradient(
+      100deg,
+      rgba(253, 246, 237, 0) 20%,
+      rgba(253, 246, 237, 0.7) 50%,
+      rgba(253, 246, 237, 0) 80%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2.6s linear infinite;
+  }
+  .dark .shimmer-line {
+    background-image: linear-gradient(
+      100deg,
+      rgba(232, 221, 208, 0) 20%,
+      rgba(232, 221, 208, 0.5) 50%,
+      rgba(232, 221, 208, 0) 80%
+    );
+  }
+}
+
+@keyframes gradient-pan {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

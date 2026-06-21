@@ -5,7 +5,8 @@ export const materialSummaries = [
     title: "Newton I",
     subtitle: "Inersia",
     icon: MoveRight,
-    accent: "bg-newton-navy text-newton-amber",
+    accent: "bg-sage-soft text-ink-deep dark:bg-moss dark:text-cream",
+    chip: "bg-sage text-ink-deep dark:bg-moss/40 dark:text-cream",
     body: "Benda mempertahankan keadaan diam atau bergerak lurus beraturan selama resultan gaya bernilai nol.",
     formula: "Resultan F = 0"
   },
@@ -13,7 +14,8 @@ export const materialSummaries = [
     title: "Newton II",
     subtitle: "Gaya, massa, percepatan",
     icon: Scale,
-    accent: "bg-newton-orange text-white",
+    accent: "bg-beige-soft text-ink-deep dark:bg-ink-muted dark:text-beige",
+    chip: "bg-beige text-ink-deep dark:bg-beige-deep/40 dark:text-cream",
     body: "Percepatan sebanding dengan gaya total dan berbanding terbalik dengan massa benda.",
     formula: "F = m x a"
   },
@@ -21,7 +23,8 @@ export const materialSummaries = [
     title: "Newton III",
     subtitle: "Aksi dan reaksi",
     icon: ArrowLeftRight,
-    accent: "bg-newton-red text-white",
+    accent: "bg-moss-soft text-ink-deep dark:bg-ink-soft dark:text-cream",
+    chip: "bg-moss text-cream dark:bg-moss-deep dark:text-cream",
     body: "Setiap gaya aksi selalu memiliki gaya reaksi yang sama besar, segaris, dan berlawanan arah.",
     formula: "F aksi = -F reaksi"
   }
@@ -32,7 +35,7 @@ export const detailedMaterials = [
     title: "Hukum Newton I",
     kicker: "Inersia",
     icon: MoveRight,
-    color: "bg-newton-navy text-newton-amber",
+    color: "bg-sage text-ink-deep dark:bg-moss dark:text-cream",
     formula: "Resultan F = 0",
     explanation:
       "Hukum Newton I menjelaskan sifat benda untuk mempertahankan keadaan geraknya. Jika benda diam, benda cenderung tetap diam. Jika benda bergerak lurus beraturan, benda cenderung tetap bergerak dengan kecepatan konstan selama tidak ada resultan gaya yang mengubahnya.",
@@ -51,7 +54,7 @@ export const detailedMaterials = [
     title: "Hukum Newton II",
     kicker: "Dinamika gerak",
     icon: Scale,
-    color: "bg-newton-orange text-white",
+    color: "bg-beige text-ink-deep dark:bg-beige-deep/40 dark:text-cream",
     formula: "F = m x a",
     explanation:
       "Hukum Newton II menjelaskan hubungan kuantitatif antara resultan gaya, massa, dan percepatan. Saat gaya total bertambah, percepatan bertambah. Saat massa bertambah dengan gaya yang sama, percepatan menjadi lebih kecil.",
@@ -70,7 +73,7 @@ export const detailedMaterials = [
     title: "Hukum Newton III",
     kicker: "Aksi dan reaksi",
     icon: ArrowLeftRight,
-    color: "bg-newton-red text-white",
+    color: "bg-moss text-cream dark:bg-moss-deep dark:text-cream",
     formula: "F aksi = -F reaksi",
     explanation:
       "Hukum Newton III menyatakan bahwa gaya selalu muncul berpasangan. Ketika benda A memberi gaya pada benda B, benda B memberi gaya yang sama besar tetapi berlawanan arah pada benda A.",
@@ -89,7 +92,7 @@ export const detailedMaterials = [
     title: "Gaya Normal dan Berat",
     kicker: "Gaya pada bidang",
     icon: ShieldCheck,
-    color: "bg-newton-amber text-newton-navy",
+    color: "bg-sage-soft text-ink-deep dark:bg-moss dark:text-cream",
     formula: "W = m x g",
     explanation:
       "Berat adalah gaya gravitasi yang bekerja pada benda. Gaya normal adalah gaya kontak dari permukaan yang arahnya tegak lurus bidang. Pada benda diam di bidang datar, besar gaya normal sering sama dengan berat benda.",
@@ -108,7 +111,7 @@ export const detailedMaterials = [
     title: "Gaya Gesek",
     kicker: "Hambatan gerak",
     icon: Waves,
-    color: "bg-newton-navy text-newton-amber",
+    color: "bg-beige-soft text-ink-deep dark:bg-beige-deep/40 dark:text-cream",
     formula: "f = koefisien x N",
     explanation:
       "Gaya gesek bekerja melawan kecenderungan gerak relatif antara dua permukaan. Gesek dapat membantu benda bergerak, seperti saat berjalan, tetapi juga dapat menghambat gerak, seperti saat kotak didorong di lantai kasar.",
@@ -127,7 +130,7 @@ export const detailedMaterials = [
     title: "Resultan Gaya",
     kicker: "Penjumlahan gaya",
     icon: CircleGauge,
-    color: "bg-newton-orange text-white",
+    color: "bg-sage text-ink-deep dark:bg-moss dark:text-cream",
     formula: "F total = F1 + F2 + ...",
     explanation:
       "Resultan gaya adalah gabungan semua gaya yang bekerja pada benda. Arah dan besar resultan menentukan apakah benda tetap stabil, bergerak konstan, atau mengalami percepatan.",
